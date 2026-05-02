@@ -17,6 +17,34 @@ model Cliente {
   creadoEn     DateTime      @default(now())
   pedidos      Pedido[]
   recordatorios Recordatorio[]
+  leads        Lead[]
+}
+
+model Lead {
+  id              Int            @id @default(autoincrement())
+  nombre          String
+  telefono        String?
+  email           String?
+  empresa         String?
+  origen          String         // instagram | referido | google | visita | whatsapp | prospector | otro
+  estado          String         @default("nuevo") // nuevo | contactado | interesado | presupuestado | ganado | perdido
+  interes         String?
+  notas           String?
+  proximoContacto DateTime?
+  creadoEn        DateTime       @default(now())
+  actualizadoEn   DateTime       @updatedAt
+  clienteId       Int?
+  cliente         Cliente?       @relation(fields: [clienteId], references: [id])
+  interacciones   Interaccion[]
+}
+
+model Interaccion {
+  id       Int      @id @default(autoincrement())
+  leadId   Int
+  tipo     String   // llamada | whatsapp | visita | email | otro
+  nota     String
+  fecha    DateTime @default(now())
+  lead     Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
 }
 
 model Material {

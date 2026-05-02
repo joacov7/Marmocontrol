@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, FileText, Users, Package, PlusCircle } from "lucide-react";
+import { Home, FileText, Users, PlusCircle, Target } from "lucide-react";
 
 const links = [
   { href: "/", icon: Home, label: "Inicio" },
   { href: "/pedidos", icon: FileText, label: "Pedidos" },
   { href: "/cotizador", icon: PlusCircle, label: "Cotizar", highlight: true },
   { href: "/clientes", icon: Users, label: "Clientes" },
-  { href: "/materiales", icon: Package, label: "Materiales" },
+  { href: "/leads", icon: Target, label: "Captación" },
 ];
 
 export default function Navbar() {
@@ -19,7 +19,7 @@ export default function Navbar() {
     <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200 z-50">
       <div className="flex items-center justify-around h-16">
         {links.map(({ href, icon: Icon, label, highlight }) => {
-          const active = pathname === href;
+          const active = pathname === href || (href !== "/" && pathname.startsWith(href));
           return (
             <Link
               key={href}
