@@ -4,6 +4,7 @@ import { formatPeso, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import EstadoSelector from "@/components/EstadoSelector";
+import ExportarPresupuesto from "@/components/ExportarPresupuesto";
 
 export const dynamic = "force-dynamic";
 
@@ -92,22 +93,19 @@ export default async function PedidoDetalle({ params }: { params: Promise<{ id: 
         )}
 
         {/* Acciones */}
-        <div className="flex gap-3 pb-4">
-          <a
-            href={`https://wa.me/${pedido.cliente.telefono.replace(/\D/g, "")}?text=${encodeURIComponent(
-              `Hola ${pedido.cliente.nombre}, su pedido #${pedido.id} por ${formatPeso(pedido.total)} está listo. ¡Coordinamos la instalación!`
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 bg-green-500 text-white font-medium py-3 rounded-xl text-center text-sm"
-          >
-            WhatsApp
-          </a>
+        <div className="space-y-3 pb-4">
+          <ExportarPresupuesto
+            pedidoId={pedido.id}
+            clienteNombre={pedido.cliente.nombre}
+            clienteTelefono={pedido.cliente.telefono}
+            total={pedido.total}
+            fechaInstalacion={pedido.fechaInstalacion?.toISOString() ?? null}
+          />
           <Link
             href={`/clientes/${pedido.clienteId}`}
-            className="flex-1 bg-blue-50 text-blue-700 font-medium py-3 rounded-xl text-center text-sm border border-blue-100"
+            className="block bg-gray-50 text-gray-700 font-medium py-3 rounded-xl text-center text-sm border border-gray-200"
           >
-            Ver cliente
+            Ver ficha del cliente
           </Link>
         </div>
       </div>
