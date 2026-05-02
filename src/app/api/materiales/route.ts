@@ -1,0 +1,40 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() {
+  const materiales = await prisma.material.findMany({
+    where: { activo: true },
+    orderBy: { nombre: "asc" },
+  });
+  return NextResponse.json(materiales);
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const material = await prisma.material.create({
+    data: {
+      nombre: body.nombre,
+      tipo: body.tipo,
+      precioPorM2: Number(body.precioPorM2),
+      color: body.color ?? null,
+      descripcion: body.descripcion ?? null,
+    },
+  });
+  return NextResponse.json(material, { status: 201 });
+}
+
+export async function PUT(req: NextRequest) {
+  const body = await req.json();
+  const material = await prisma.material.update({
+    where: { id: body.id },
+    data: {
+      nombre: body.nombre,
+      tipo: body.tipo,
+      precioPorM2: Number(body.precioPorM2),
+      color: body.color ?? null,
+      descripcion: body.descripcion ?? null,
+      activo: body.activo ?? true,
+    },
+  });
+  return NextResponse.json(material);
+}

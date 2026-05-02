@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Cliente {
+  id           Int           @id @default(autoincrement())
+  nombre       String
+  telefono     String
+  email        String?
+  direccion    String?
+  notas        String?
+  creadoEn     DateTime      @default(now())
+  pedidos      Pedido[]
+  recordatorios Recordatorio[]
+}
+
+model Material {
+  id            Int          @id @default(autoincrement())
+  nombre        String
+  tipo          String       // granito, marmol, porcelana, etc.
+  precioPorM2   Float
+  color         String?
+  descripcion   String?
+  activo        Boolean      @default(true)
+  items         ItemPedido[]
+}
+
+model Pedido {
+  id               Int          @id @default(autoincrement())
+  clienteId        Int
+  estado           String       @default("presupuesto") // presupuesto | produccion | listo | instalado
+  total            Float
+  notas            String?
+  fechaInstalacion DateTime?
+  creadoEn         DateTime     @default(now())
+  actualizadoEn    DateTime     @updatedAt
+  cliente          Cliente      @relation(fields: [clienteId], references: [id])
+  items            ItemPedido[]
+}
+
+model ItemPedido {
+  id          Int      @id @default(autoincrement())
+  pedidoId    Int
+  materialId  Int
+  descripcion String?
+  largo       Float
+  ancho       Float
+  cantBachas  Int      @default(0)
+  cantCortes  Int      @default(0)
+  precioUnit  Float
+  precioTotal Float
+  pedido      Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  material    Material @relation(fields: [materialId], references: [id])
+}
+
+model Recordatorio {
+  id         Int      @id @default(autoincrement())
+  clienteId  Int
+  nota       String
+  fechaAviso DateTime
+  completado Boolean  @default(false)
+  creadoEn   DateTime @default(now())
+  cliente    Cliente  @relation(fields: [clienteId], references: [id])
+}
