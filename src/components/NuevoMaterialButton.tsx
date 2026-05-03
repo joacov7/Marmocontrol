@@ -21,6 +21,7 @@ export default function NuevoMaterialButton() {
         nombre: fd.get("nombre"),
         tipo: fd.get("tipo"),
         precioPorM2: Number(fd.get("precioPorM2")),
+        porcentajeDesperdicio: Number(fd.get("porcentajeDesperdicio")) || 10,
         color: fd.get("color") || undefined,
         descripcion: fd.get("descripcion") || undefined,
       }),
@@ -62,6 +63,19 @@ export default function NuevoMaterialButton() {
                 placeholder="Precio por m² (ARS) *"
                 className="input-field"
               />
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">% Desperdicio</label>
+                <input
+                  name="porcentajeDesperdicio"
+                  type="number"
+                  min="0"
+                  max="50"
+                  step="1"
+                  defaultValue="10"
+                  placeholder="10"
+                  className="input-field"
+                />
+              </div>
               <div>
                 <label className="text-xs text-gray-500 mb-1 block">Color de referencia</label>
                 <input name="color" type="color" defaultValue="#a0a0a0" className="h-10 w-full rounded-lg border border-gray-200 p-1" />

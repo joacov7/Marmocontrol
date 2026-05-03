@@ -49,42 +49,57 @@ model Interaccion {
 }
 
 model Material {
-  id            Int          @id @default(autoincrement())
-  nombre        String
-  tipo          String       // granito, marmol, porcelana, etc.
-  precioPorM2   Float
-  color         String?
-  descripcion   String?
-  activo        Boolean      @default(true)
-  items         ItemPedido[]
+  id                    Int          @id @default(autoincrement())
+  nombre                String
+  tipo                  String
+  precioPorM2           Float
+  porcentajeDesperdicio Float        @default(10)
+  color                 String?
+  descripcion           String?
+  activo                Boolean      @default(true)
+  items                 ItemPedido[]
 }
 
 model Pedido {
-  id               Int          @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   clienteId        Int
-  estado           String       @default("presupuesto") // presupuesto | produccion | listo | instalado
+  estado           String         @default("presupuesto") // presupuesto | produccion | listo | instalado
+  estadoTaller     String         @default("pendiente")   // pendiente | en_proceso | terminado
   total            Float
   notas            String?
+  notasTaller      String?
   fechaInstalacion DateTime?
-  creadoEn         DateTime     @default(now())
-  actualizadoEn    DateTime     @updatedAt
-  cliente          Cliente      @relation(fields: [clienteId], references: [id])
+  fechaEntrega     DateTime?
+  creadoEn         DateTime       @default(now())
+  actualizadoEn    DateTime       @updatedAt
+  cliente          Cliente        @relation(fields: [clienteId], references: [id])
   items            ItemPedido[]
+  avances          AvanceTaller[]
+}
+
+model AvanceTaller {
+  id        Int      @id @default(autoincrement())
+  pedidoId  Int
+  nota      String
+  estado    String
+  creadoEn  DateTime @default(now())
+  pedido    Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
 }
 
 model ItemPedido {
-  id          Int      @id @default(autoincrement())
-  pedidoId    Int
-  materialId  Int
-  descripcion String?
-  largo       Float
-  ancho       Float
-  cantBachas  Int      @default(0)
-  cantCortes  Int      @default(0)
-  precioUnit  Float
-  precioTotal Float
-  pedido      Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
-  material    Material @relation(fields: [materialId], references: [id])
+  id            Int      @id @default(autoincrement())
+  pedidoId      Int
+  materialId    Int
+  descripcion   String?
+  largo         Float
+  ancho         Float
+  cantBachas    Int      @default(0)
+  cantCortes    Int      @default(0)
+  desperdicio   Float    @default(0)
+  precioUnit    Float
+  precioTotal   Float
+  pedido        Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  material      Material @relation(fields: [materialId], references: [id])
 }
 
 model Recordatorio {

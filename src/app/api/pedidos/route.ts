@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
       total: body.total,
       notas: body.notas ?? null,
       fechaInstalacion: body.fechaInstalacion ? new Date(body.fechaInstalacion) : null,
+      fechaEntrega: body.fechaEntrega ? new Date(body.fechaEntrega) : null,
       items: {
         create: body.items.map((item: {
           materialId: number;
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
           ancho: number;
           cantBachas: number;
           cantCortes: number;
+          desperdicio?: number;
           precioUnit: number;
           precioTotal: number;
         }) => ({
@@ -40,6 +42,7 @@ export async function POST(req: NextRequest) {
           ancho: item.ancho,
           cantBachas: item.cantBachas,
           cantCortes: item.cantCortes,
+          desperdicio: item.desperdicio ?? 0,
           precioUnit: item.precioUnit,
           precioTotal: item.precioTotal,
         })),
