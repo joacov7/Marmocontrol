@@ -35,7 +35,7 @@ export default async function MaterialesPage() {
         action={<NuevoMaterialButton />}
       />
 
-      <div className="px-4 space-y-5 pb-6">
+      <div className="px-4 space-y-5 pb-24">
         {activos.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-400 text-sm">No hay materiales cargados</p>
