@@ -2,10 +2,26 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Pencil } from "lucide-react";
 
 const TIPOS = ["granito", "marmol", "porcelana", "cuarcita", "silestone", "otro"];
 
-export default function NuevoMaterialButton() {
+interface Material {
+  id: number;
+  nombre: string;
+  tipo: string;
+  precioCompra: number;
+  precioPorM2: number;
+  porcentajeDesperdicio: number;
+  largoPlaca: number | null;
+  anchoPlaca: number | null;
+  proveedor: string | null;
+  color: string | null;
+  descripcion: string | null;
+  activo: boolean;
+}
+
+export default function EditMaterialButton({ material: m }: { material: Material }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -15,9 +31,10 @@ export default function NuevoMaterialButton() {
     setLoading(true);
     const fd = new FormData(e.currentTarget);
     await fetch("/api/materiales", {
-      method: "POST",
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        id: m.id,
         nombre: fd.get("nombre"),
         tipo: fd.get("tipo"),
         precioCompra: Number(fd.get("precioCompra")) || 0,
@@ -28,6 +45,7 @@ export default function NuevoMaterialButton() {
         proveedor: fd.get("proveedor") || null,
         color: fd.get("color") || null,
         descripcion: fd.get("descripcion") || null,
+        activo: fd.get("activo") === "true",
       }),
     });
     setLoading(false);
@@ -39,16 +57,17 @@ export default function NuevoMaterialButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-xl"
+        className="w-full flex items-center justify-center gap-2 border border-gray-200 text-gray-600 font-medium py-2.5 rounded-xl text-sm hover:border-gray-300 transition-colors"
       >
-        + Agregar
+        <Pencil size={14} />
+        Editar material
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40">
           <div className="bg-white w-full max-w-md rounded-t-2xl shadow-xl max-h-[92vh] overflow-y-auto">
             <div className="px-6 pt-6 pb-2 flex items-center justify-between sticky top-0 bg-white border-b border-gray-100">
-              <h2 className="font-bold text-lg">Nuevo material</h2>
+              <h2 className="font-bold text-lg">Editar material</h2>
               <button onClick={() => setOpen(false)} className="text-gray-400 p-1">✕</button>
             </div>
 
@@ -56,19 +75,16 @@ export default function NuevoMaterialButton() {
               {/* Identificación */}
               <section className="space-y-3">
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Identificación</p>
-                <input name="nombre" required placeholder="Nombre *" className="input-field" />
-                <select name="tipo" required className="input-field">
-                  <option value="">Tipo *</option>
+                <input name="nombre" required defaultValue={m.nombre} placeholder="Nombre *" className="input-field" />
+                <select name="tipo" required defaultValue={m.tipo} className="input-field">
                   {TIPOS.map((t) => (
-                    <option key={t} value={t} className="capitalize">
-                      {t.charAt(0).toUpperCase() + t.slice(1)}
-                    </option>
+                    <option key={t} value={t} className="capitalize">{t.charAt(0).toUpperCase() + t.slice(1)}</option>
                   ))}
                 </select>
-                <input name="proveedor" placeholder="Proveedor" className="input-field" />
+                <input name="proveedor" defaultValue={m.proveedor ?? ""} placeholder="Proveedor" className="input-field" />
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">Color</label>
-                  <input name="color" type="color" defaultValue="#a0a0a0" className="h-10 w-full rounded-lg border border-gray-200 p-1" />
+                  <input name="color" type="color" defaultValue={m.color ?? "#a0a0a0"} className="h-10 w-full rounded-lg border border-gray-200 p-1" />
                 </div>
               </section>
 
@@ -84,6 +100,7 @@ export default function NuevoMaterialButton() {
                       min="0"
                       step="100"
                       required
+                      defaultValue={m.precioCompra}
                       placeholder="Ej: 45000"
                       className="input-field"
                     />
@@ -96,6 +113,7 @@ export default function NuevoMaterialButton() {
                       min="0"
                       step="100"
                       required
+                      defaultValue={m.precioPorM2}
                       placeholder="Ej: 85000"
                       className="input-field"
                     />
@@ -114,6 +132,7 @@ export default function NuevoMaterialButton() {
                       type="number"
                       step="0.01"
                       min="0"
+                      defaultValue={m.largoPlaca ?? ""}
                       placeholder="Ej: 3.00"
                       className="input-field"
                     />
@@ -125,6 +144,7 @@ export default function NuevoMaterialButton() {
                       type="number"
                       step="0.01"
                       min="0"
+                      defaultValue={m.anchoPlaca ?? ""}
                       placeholder="Ej: 1.80"
                       className="input-field"
                     />
@@ -143,26 +163,22 @@ export default function NuevoMaterialButton() {
                     min="0"
                     max="50"
                     step="1"
-                    defaultValue="10"
+                    defaultValue={m.porcentajeDesperdicio}
                     className="input-field"
                   />
                 </div>
-                <textarea name="descripcion" placeholder="Descripción" rows={2} className="input-field resize-none" />
+                <textarea name="descripcion" defaultValue={m.descripcion ?? ""} placeholder="Descripción" rows={2} className="input-field resize-none" />
+                <select name="activo" defaultValue={String(m.activo)} className="input-field">
+                  <option value="true">Activo</option>
+                  <option value="false">Inactivo</option>
+                </select>
               </section>
 
               <div className="flex gap-3 pt-2 pb-4">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium"
-                >
+                <button type="button" onClick={() => setOpen(false)} className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium">
                   Cancelar
                 </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 py-3 rounded-xl bg-blue-600 text-white font-medium disabled:opacity-60"
-                >
+                <button type="submit" disabled={loading} className="flex-1 py-3 rounded-xl bg-blue-600 text-white font-medium disabled:opacity-60">
                   {loading ? "Guardando..." : "Guardar"}
                 </button>
               </div>
