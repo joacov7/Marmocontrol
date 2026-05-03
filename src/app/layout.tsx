@@ -11,10 +11,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <body className="bg-gray-50 min-h-screen">
-        <div className="max-w-md mx-auto bg-white min-h-screen flex flex-col shadow-sm">
-          <main className="flex-1 pb-20">{children}</main>
-          <Navbar />
-        </div>
+        <Navbar />
+        {/* En escritorio: margen izquierdo para el sidebar. En móvil: padding inferior para el navbar */}
+        <main className="md:ml-52 pb-20 md:pb-6 min-h-screen">
+          <div className="max-w-3xl mx-auto">
+            {children}
+          </div>
+        </main>
       </body>
     </html>
   );
