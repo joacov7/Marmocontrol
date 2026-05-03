@@ -17,9 +17,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const pedido = await prisma.pedido.update({
     where: { id: Number(id) },
     data: {
-      estado: body.estado,
-      notas: body.notas ?? undefined,
-      fechaInstalacion: body.fechaInstalacion ? new Date(body.fechaInstalacion) : undefined,
+      ...(body.estado !== undefined && { estado: body.estado }),
+      ...(body.estadoTaller !== undefined && { estadoTaller: body.estadoTaller }),
+      ...(body.notas !== undefined && { notas: body.notas }),
+      ...(body.notasTaller !== undefined && { notasTaller: body.notasTaller }),
+      ...(body.fechaInstalacion !== undefined && { fechaInstalacion: body.fechaInstalacion ? new Date(body.fechaInstalacion) : null }),
+      ...(body.fechaEntrega !== undefined && { fechaEntrega: body.fechaEntrega ? new Date(body.fechaEntrega) : null }),
     },
     include: { cliente: true, items: { include: { material: true } } },
   });

@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, FileText, Users, PlusCircle, Target } from "lucide-react";
+import { Home, FileText, PlusCircle, Target, Wrench } from "lucide-react";
 
 const links = [
   { href: "/", icon: Home, label: "Inicio" },
   { href: "/pedidos", icon: FileText, label: "Pedidos" },
   { href: "/cotizador", icon: PlusCircle, label: "Cotizar", highlight: true },
-  { href: "/clientes", icon: Users, label: "Clientes" },
+  { href: "/taller", icon: Wrench, label: "Taller" },
   { href: "/leads", icon: Target, label: "Captación" },
 ];
 
