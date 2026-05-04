@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil } from "lucide-react";
 
-const TIPOS = ["granito", "marmol", "porcelana", "cuarcita", "silestone", "otro"];
+const TIPOS = ["granito", "marmol", "porcelana", "cuarcita", "silestone", "bacha", "otro"];
 
 interface Material {
   id: number;

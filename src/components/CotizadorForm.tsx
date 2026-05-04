@@ -25,28 +25,40 @@ interface Item {
   descripcion: string;
   largo: number;
   ancho: number;
-  cantBachas: number;
   cantCortes: number;
+  bachaTipo: "ninguna" | "catalogo" | "material";
+  bachaId: number;
+  bachaLargo: number;
+  bachaAncho: number;
+  cantBachas: number;
 }
 
-const PRECIO_BACHA = 15000;
 const PRECIO_CORTE = 8000;
 
 function calcularItem(item: Item, materiales: Material[]) {
   const mat = materiales.find((m) => m.id === item.materialId);
-  if (!mat || !item.largo || !item.ancho) return { subtotal: 0, m2Neto: 0, m2ConDesperdicio: 0, desperdicio: 0 };
+  if (!mat || !item.largo || !item.ancho) return { subtotal: 0, m2Neto: 0, m2ConDesperdicio: 0, desperdicio: 0, bachaCosto: 0 };
+
   const m2Neto = item.largo * item.ancho;
   const factor = 1 + mat.porcentajeDesperdicio / 100;
   const m2ConDesperdicio = m2Neto * factor;
   const desperdicio = m2ConDesperdicio - m2Neto;
-  const subtotal = m2ConDesperdicio * mat.precioPorM2
-    + item.cantBachas * PRECIO_BACHA
-    + item.cantCortes * PRECIO_CORTE;
-  return { subtotal, m2Neto, m2ConDesperdicio, desperdicio };
+
+  let bachaCosto = 0;
+  if (item.bachaTipo === "catalogo" && item.bachaId && item.cantBachas > 0) {
+    const bacha = materiales.find((m) => m.id === item.bachaId);
+    if (bacha) bachaCosto = item.cantBachas * bacha.precioPorM2;
+  } else if (item.bachaTipo === "material" && item.bachaLargo && item.bachaAncho && item.cantBachas > 0) {
+    bachaCosto = item.cantBachas * item.bachaLargo * item.bachaAncho * mat.precioPorM2;
+  }
+
+  const subtotal = m2ConDesperdicio * mat.precioPorM2 + bachaCosto + item.cantCortes * PRECIO_CORTE;
+  return { subtotal, m2Neto, m2ConDesperdicio, desperdicio, bachaCosto };
 }
 
 const itemVacio = (): Item => ({
-  materialId: 0, descripcion: "", largo: 0, ancho: 0, cantBachas: 0, cantCortes: 0,
+  materialId: 0, descripcion: "", largo: 0, ancho: 0, cantCortes: 0,
+  bachaTipo: "ninguna", bachaId: 0, bachaLargo: 0, bachaAncho: 0, cantBachas: 0,
 });
 
 export default function CotizadorForm({
@@ -66,6 +78,9 @@ export default function CotizadorForm({
   const [fechaInstalacion, setFechaInstalacion] = useState("");
   const [fechaEntrega, setFechaEntrega] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const piedras = materiales.filter((m) => m.tipo !== "bacha");
+  const bachasCatalogo = materiales.filter((m) => m.tipo === "bacha");
 
   const updateItem = useCallback((idx: number, field: keyof Item, value: string | number) => {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, [field]: value } : it)));
@@ -113,6 +128,10 @@ export default function CotizadorForm({
           desperdicio,
           precioUnit: mat.precioPorM2,
           precioTotal: subtotal,
+          bachaTipo: it.bachaTipo !== "ninguna" ? it.bachaTipo : null,
+          bachaId: it.bachaTipo === "catalogo" && it.bachaId ? it.bachaId : null,
+          bachaLargo: it.bachaTipo === "material" && it.bachaLargo ? it.bachaLargo : null,
+          bachaAncho: it.bachaTipo === "material" && it.bachaAncho ? it.bachaAncho : null,
         };
       }),
     };
@@ -160,7 +179,8 @@ export default function CotizadorForm({
         <div className="space-y-3">
           {items.map((item, idx) => {
             const mat = materiales.find((m) => m.id === item.materialId);
-            const { subtotal, m2Neto, m2ConDesperdicio, desperdicio } = calcularItem(item, materiales);
+            const bachaSeleccionada = materiales.find((m) => m.id === item.bachaId);
+            const { subtotal, m2Neto, m2ConDesperdicio, desperdicio, bachaCosto } = calcularItem(item, materiales);
             return (
               <div key={idx} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
@@ -172,15 +192,17 @@ export default function CotizadorForm({
                   )}
                 </div>
                 <div className="space-y-3">
+                  {/* Material */}
                   <select value={item.materialId || ""} onChange={(e) => updateItem(idx, "materialId", Number(e.target.value))} className="input-field" required>
                     <option value="">Material *</option>
-                    {materiales.map((m) => (
+                    {piedras.map((m) => (
                       <option key={m.id} value={m.id}>
                         {m.nombre} — {formatPeso(m.precioPorM2)}/m² (+{m.porcentajeDesperdicio}% desp.)
                       </option>
                     ))}
                   </select>
 
+                  {/* Dimensiones */}
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-xs text-gray-500 mb-1 block">Largo (m) *</label>
@@ -192,19 +214,73 @@ export default function CotizadorForm({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">Bachas</label>
-                      <input type="number" min="0" value={item.cantBachas || ""} onChange={(e) => updateItem(idx, "cantBachas", parseInt(e.target.value) || 0)} placeholder="0" className="input-field" />
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-500 mb-1 block">Cortes extra</label>
-                      <input type="number" min="0" value={item.cantCortes || ""} onChange={(e) => updateItem(idx, "cantCortes", parseInt(e.target.value) || 0)} placeholder="0" className="input-field" />
-                    </div>
+                  {/* Bachas */}
+                  <div className="space-y-2">
+                    <label className="text-xs text-gray-500 block">Bacha</label>
+                    <select
+                      value={item.bachaTipo}
+                      onChange={(e) => updateItem(idx, "bachaTipo", e.target.value)}
+                      className="input-field"
+                    >
+                      <option value="ninguna">Sin bacha</option>
+                      {bachasCatalogo.length > 0 && <option value="catalogo">Del catálogo</option>}
+                      <option value="material">Del mismo material (tallada)</option>
+                    </select>
+
+                    {item.bachaTipo === "catalogo" && (
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="col-span-2">
+                          <select
+                            value={item.bachaId || ""}
+                            onChange={(e) => updateItem(idx, "bachaId", Number(e.target.value))}
+                            className="input-field"
+                            required
+                          >
+                            <option value="">Seleccionar bacha *</option>
+                            {bachasCatalogo.map((b) => (
+                              <option key={b.id} value={b.id}>{b.nombre} — {formatPeso(b.precioPorM2)}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <input
+                            type="number" min="1"
+                            value={item.cantBachas || ""}
+                            onChange={(e) => updateItem(idx, "cantBachas", parseInt(e.target.value) || 0)}
+                            placeholder="Cant."
+                            className="input-field"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {item.bachaTipo === "material" && (
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className="text-xs text-gray-400 mb-1 block">Largo (m)</label>
+                          <input type="number" step="0.01" min="0" value={item.bachaLargo || ""} onChange={(e) => updateItem(idx, "bachaLargo", parseFloat(e.target.value) || 0)} placeholder="0.40" className="input-field" />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-400 mb-1 block">Ancho (m)</label>
+                          <input type="number" step="0.01" min="0" value={item.bachaAncho || ""} onChange={(e) => updateItem(idx, "bachaAncho", parseFloat(e.target.value) || 0)} placeholder="0.35" className="input-field" />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-400 mb-1 block">Cant.</label>
+                          <input type="number" min="1" value={item.cantBachas || ""} onChange={(e) => updateItem(idx, "cantBachas", parseInt(e.target.value) || 0)} placeholder="1" className="input-field" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Cortes */}
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Cortes extra</label>
+                    <input type="number" min="0" value={item.cantCortes || ""} onChange={(e) => updateItem(idx, "cantCortes", parseInt(e.target.value) || 0)} placeholder="0" className="input-field" />
                   </div>
 
                   <input value={item.descripcion} onChange={(e) => updateItem(idx, "descripcion", e.target.value)} placeholder="Descripción (opcional)" className="input-field" />
 
+                  {/* Desglose */}
                   {subtotal > 0 && mat && (
                     <div className="bg-blue-50 rounded-xl p-3 space-y-1.5">
                       <div className="flex justify-between text-xs text-blue-700">
@@ -212,15 +288,21 @@ export default function CotizadorForm({
                         <span>{m2Neto.toFixed(2)} m²</span>
                       </div>
                       <div className="flex justify-between text-xs text-orange-600">
-                        <span className="flex items-center gap-1">
-                          <Info size={10} /> Desperdicio ({mat.porcentajeDesperdicio}%)
-                        </span>
+                        <span className="flex items-center gap-1"><Info size={10} /> Desperdicio ({mat.porcentajeDesperdicio}%)</span>
                         <span>+{desperdicio.toFixed(2)} m²</span>
                       </div>
                       <div className="flex justify-between text-xs text-blue-700 border-t border-blue-100 pt-1.5">
                         <span>m² a comprar</span>
                         <span className="font-semibold">{m2ConDesperdicio.toFixed(2)} m²</span>
                       </div>
+                      {bachaCosto > 0 && (
+                        <div className="flex justify-between text-xs text-purple-700 border-t border-blue-100 pt-1.5">
+                          <span>
+                            {item.bachaTipo === "catalogo" ? `${item.cantBachas}× ${bachaSeleccionada?.nombre ?? "bacha"}` : `${item.cantBachas}× bacha tallada`}
+                          </span>
+                          <span>{formatPeso(bachaCosto)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-sm font-bold text-blue-800 border-t border-blue-200 pt-1.5">
                         <span>Subtotal</span>
                         <span>{formatPeso(subtotal)}</span>

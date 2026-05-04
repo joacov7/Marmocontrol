@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const TIPOS = ["granito", "marmol", "porcelana", "cuarcita", "silestone", "otro"];
+const TIPOS = ["granito", "marmol", "porcelana", "cuarcita", "silestone", "bacha", "otro"];
 
 export default function NuevoMaterialButton() {
   const [open, setOpen] = useState(false);

@@ -35,6 +35,10 @@ export async function POST(req: NextRequest) {
           desperdicio?: number;
           precioUnit: number;
           precioTotal: number;
+          bachaTipo?: string | null;
+          bachaId?: number | null;
+          bachaLargo?: number | null;
+          bachaAncho?: number | null;
         }) => ({
           materialId: item.materialId,
           descripcion: item.descripcion ?? null,
@@ -45,6 +49,10 @@ export async function POST(req: NextRequest) {
           desperdicio: item.desperdicio ?? 0,
           precioUnit: item.precioUnit,
           precioTotal: item.precioTotal,
+          bachaTipo: item.bachaTipo ?? null,
+          bachaId: item.bachaId ?? null,
+          bachaLargo: item.bachaLargo ?? null,
+          bachaAncho: item.bachaAncho ?? null,
         })),
       },
     },
