@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, FileText, PlusCircle, Target, Wrench, Layers } from "lucide-react";
+import { Home, FileText, PlusCircle, Target, Wrench, Layers, Settings } from "lucide-react";
 
 const links = [
   { href: "/", icon: Home, label: "Inicio" },
@@ -11,6 +11,7 @@ const links = [
   { href: "/materiales", icon: Layers, label: "Materiales" },
   { href: "/taller", icon: Wrench, label: "Taller" },
   { href: "/leads", icon: Target, label: "Captación" },
+  { href: "/mantenimiento", icon: Settings, label: "Mantenimiento" },
 ];
 
 export default function Navbar() {

@@ -19,6 +19,9 @@ interface Material {
   color: string | null;
   descripcion: string | null;
   activo: boolean;
+  stockActual: number;
+  stockMinimo: number;
+  unidadStock: string;
 }
 
 export default function EditMaterialButton({ material: m }: { material: Material }) {
@@ -46,6 +49,9 @@ export default function EditMaterialButton({ material: m }: { material: Material
         color: fd.get("color") || null,
         descripcion: fd.get("descripcion") || null,
         activo: fd.get("activo") === "true",
+        stockActual: Number(fd.get("stockActual")) || 0,
+        stockMinimo: Number(fd.get("stockMinimo")) || 0,
+        unidadStock: fd.get("unidadStock") || "m2",
       }),
     });
     setLoading(false);
@@ -90,33 +96,37 @@ export default function EditMaterialButton({ material: m }: { material: Material
 
               {/* Precios */}
               <section className="space-y-3">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Precios por m²</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Precios</p>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-xs text-gray-500 mb-1 block">Precio de costo *</label>
-                    <input
-                      name="precioCompra"
-                      type="number"
-                      min="0"
-                      step="100"
-                      required
-                      defaultValue={m.precioCompra}
-                      placeholder="Ej: 45000"
-                      className="input-field"
-                    />
+                    <input name="precioCompra" type="number" min="0" step="100" required defaultValue={m.precioCompra} placeholder="Ej: 45000" className="input-field" />
                   </div>
                   <div>
                     <label className="text-xs text-gray-500 mb-1 block">Precio de venta *</label>
-                    <input
-                      name="precioPorM2"
-                      type="number"
-                      min="0"
-                      step="100"
-                      required
-                      defaultValue={m.precioPorM2}
-                      placeholder="Ej: 85000"
-                      className="input-field"
-                    />
+                    <input name="precioPorM2" type="number" min="0" step="100" required defaultValue={m.precioPorM2} placeholder="Ej: 85000" className="input-field" />
+                  </div>
+                </div>
+              </section>
+
+              {/* Stock */}
+              <section className="space-y-3">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Stock</p>
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">Unidad de stock</label>
+                  <select name="unidadStock" defaultValue={m.unidadStock} className="input-field">
+                    <option value="m2">m² (metros cuadrados)</option>
+                    <option value="unidad">Unidades</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Stock actual</label>
+                    <input name="stockActual" type="number" min="0" step="0.01" defaultValue={m.stockActual} placeholder="0" className="input-field" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-500 mb-1 block">Stock mínimo</label>
+                    <input name="stockMinimo" type="number" min="0" step="0.01" defaultValue={m.stockMinimo} placeholder="0" className="input-field" />
                   </div>
                 </div>
               </section>
@@ -127,27 +137,11 @@ export default function EditMaterialButton({ material: m }: { material: Material
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-xs text-gray-500 mb-1 block">Largo (m)</label>
-                    <input
-                      name="largoPlaca"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      defaultValue={m.largoPlaca ?? ""}
-                      placeholder="Ej: 3.00"
-                      className="input-field"
-                    />
+                    <input name="largoPlaca" type="number" step="0.01" min="0" defaultValue={m.largoPlaca ?? ""} placeholder="Ej: 3.00" className="input-field" />
                   </div>
                   <div>
                     <label className="text-xs text-gray-500 mb-1 block">Ancho (m)</label>
-                    <input
-                      name="anchoPlaca"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      defaultValue={m.anchoPlaca ?? ""}
-                      placeholder="Ej: 1.80"
-                      className="input-field"
-                    />
+                    <input name="anchoPlaca" type="number" step="0.01" min="0" defaultValue={m.anchoPlaca ?? ""} placeholder="Ej: 1.80" className="input-field" />
                   </div>
                 </div>
               </section>
@@ -157,15 +151,7 @@ export default function EditMaterialButton({ material: m }: { material: Material
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Otros</p>
                 <div>
                   <label className="text-xs text-gray-500 mb-1 block">% Desperdicio</label>
-                  <input
-                    name="porcentajeDesperdicio"
-                    type="number"
-                    min="0"
-                    max="50"
-                    step="1"
-                    defaultValue={m.porcentajeDesperdicio}
-                    className="input-field"
-                  />
+                  <input name="porcentajeDesperdicio" type="number" min="0" max="50" step="1" defaultValue={m.porcentajeDesperdicio} className="input-field" />
                 </div>
                 <textarea name="descripcion" defaultValue={m.descripcion ?? ""} placeholder="Descripción" rows={2} className="input-field resize-none" />
                 <select name="activo" defaultValue={String(m.activo)} className="input-field">
@@ -175,9 +161,7 @@ export default function EditMaterialButton({ material: m }: { material: Material
               </section>
 
               <div className="flex gap-3 pt-2 pb-4">
-                <button type="button" onClick={() => setOpen(false)} className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium">
-                  Cancelar
-                </button>
+                <button type="button" onClick={() => setOpen(false)} className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium">Cancelar</button>
                 <button type="submit" disabled={loading} className="flex-1 py-3 rounded-xl bg-blue-600 text-white font-medium disabled:opacity-60">
                   {loading ? "Guardando..." : "Guardar"}
                 </button>

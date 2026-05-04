@@ -27,8 +27,8 @@ model Lead {
   telefono        String?
   email           String?
   empresa         String?
-  origen          String         // instagram | referido | google | visita | whatsapp | prospector | otro
-  estado          String         @default("nuevo") // nuevo | contactado | interesado | presupuestado | ganado | perdido
+  origen          String
+  estado          String         @default("nuevo")
   interes         String?
   notas           String?
   proximoContacto DateTime?
@@ -42,7 +42,7 @@ model Lead {
 model Interaccion {
   id       Int      @id @default(autoincrement())
   leadId   Int
-  tipo     String   // llamada | whatsapp | visita | email | otro
+  tipo     String
   nota     String
   fecha    DateTime @default(now())
   lead     Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
@@ -52,15 +52,18 @@ model Material {
   id                    Int          @id @default(autoincrement())
   nombre                String
   tipo                  String
-  precioCompra          Float        @default(0)   // precio de costo por m²
-  precioPorM2           Float                       // precio de venta por m² (o por unidad si tipo=bacha)
+  precioCompra          Float        @default(0)
+  precioPorM2           Float
   porcentajeDesperdicio Float        @default(10)
-  largoPlaca            Float?                      // largo de la placa en metros
-  anchoPlaca            Float?                      // ancho de la placa en metros
+  largoPlaca            Float?
+  anchoPlaca            Float?
   proveedor             String?
   color                 String?
   descripcion           String?
   activo                Boolean      @default(true)
+  stockActual           Float        @default(0)
+  stockMinimo           Float        @default(0)
+  unidadStock           String       @default("m2") // "m2" | "unidad"
   items                 ItemPedido[] @relation("ItemMaterial")
   itemsBacha            ItemPedido[] @relation("ItemBacha")
 }
@@ -68,8 +71,8 @@ model Material {
 model Pedido {
   id               Int            @id @default(autoincrement())
   clienteId        Int
-  estado           String         @default("presupuesto") // presupuesto | produccion | listo | instalado
-  estadoTaller     String         @default("pendiente")   // pendiente | en_proceso | terminado
+  estado           String         @default("presupuesto")
+  estadoTaller     String         @default("pendiente")
   total            Float
   notas            String?
   notasTaller      String?
@@ -103,9 +106,9 @@ model ItemPedido {
   desperdicio   Float     @default(0)
   precioUnit    Float
   precioTotal   Float
-  bachaTipo     String?                // "catalogo" | "material"
-  bachaId       Int?                   // FK a Material tipo=bacha si es del catálogo
-  bachaLargo    Float?                 // dimensiones si es del mismo material
+  bachaTipo     String?
+  bachaId       Int?
+  bachaLargo    Float?
   bachaAncho    Float?
   pedido        Pedido    @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
   material      Material  @relation("ItemMaterial", fields: [materialId], references: [id])
@@ -120,4 +123,27 @@ model Recordatorio {
   completado Boolean  @default(false)
   creadoEn   DateTime @default(now())
   cliente    Cliente  @relation(fields: [clienteId], references: [id])
+}
+
+model Maquina {
+  id             Int             @id @default(autoincrement())
+  nombre         String
+  tipo           String          // "maquina" | "vehiculo"
+  descripcion    String?
+  activo         Boolean         @default(true)
+  creadoEn       DateTime        @default(now())
+  mantenimientos Mantenimiento[]
+}
+
+model Mantenimiento {
+  id           Int       @id @default(autoincrement())
+  maquinaId    Int
+  tipo         String    // "aceite" | "gomas" | "frenos" | "service" | "reparacion" | "revision" | "otro"
+  descripcion  String
+  costo        Float     @default(0)
+  fecha        DateTime  @default(now())
+  proximaFecha DateTime?
+  km           Int?
+  creadoEn     DateTime  @default(now())
+  maquina      Maquina   @relation(fields: [maquinaId], references: [id], onDelete: Cascade)
 }

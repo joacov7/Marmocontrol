@@ -44,6 +44,9 @@ export async function PUT(req: NextRequest) {
       color: body.color || null,
       descripcion: body.descripcion || null,
       activo: body.activo ?? true,
+      stockActual: Number(body.stockActual ?? 0),
+      stockMinimo: Number(body.stockMinimo ?? 0),
+      unidadStock: body.unidadStock || "m2",
     },
   });
   return NextResponse.json(material);
