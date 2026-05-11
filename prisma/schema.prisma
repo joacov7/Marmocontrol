@@ -8,142 +8,91 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model Cliente {
-  id           Int           @id @default(autoincrement())
-  nombre       String
-  telefono     String
-  email        String?
-  direccion    String?
-  notas        String?
-  creadoEn     DateTime      @default(now())
-  pedidos      Pedido[]
-  recordatorios Recordatorio[]
-  leads        Lead[]
-}
-
-model Lead {
-  id              Int            @id @default(autoincrement())
-  nombre          String
-  telefono        String?
-  email           String?
-  empresa         String?
-  origen          String
-  estado          String         @default("nuevo")
-  interes         String?
-  notas           String?
-  proximoContacto DateTime?
-  creadoEn        DateTime       @default(now())
-  actualizadoEn   DateTime       @updatedAt
-  clienteId       Int?
-  cliente         Cliente?       @relation(fields: [clienteId], references: [id])
-  interacciones   Interaccion[]
-}
-
-model Interaccion {
-  id       Int      @id @default(autoincrement())
-  leadId   Int
-  tipo     String
-  nota     String
-  fecha    DateTime @default(now())
-  lead     Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-}
-
-model Material {
-  id                    Int          @id @default(autoincrement())
-  nombre                String
-  tipo                  String
-  precioCompra          Float        @default(0)
-  precioPorM2           Float
-  porcentajeDesperdicio Float        @default(10)
-  largoPlaca            Float?
-  anchoPlaca            Float?
-  proveedor             String?
-  color                 String?
-  descripcion           String?
-  activo                Boolean      @default(true)
-  stockActual           Float        @default(0)
-  stockMinimo           Float        @default(0)
-  unidadStock           String       @default("m2") // "m2" | "unidad"
-  items                 ItemPedido[] @relation("ItemMaterial")
-  itemsBacha            ItemPedido[] @relation("ItemBacha")
-}
-
-model Pedido {
-  id               Int            @id @default(autoincrement())
-  clienteId        Int
-  estado           String         @default("presupuesto")
-  estadoTaller     String         @default("pendiente")
-  total            Float
-  notas            String?
-  notasTaller      String?
-  fechaInstalacion DateTime?
-  fechaEntrega     DateTime?
-  creadoEn         DateTime       @default(now())
-  actualizadoEn    DateTime       @updatedAt
-  cliente          Cliente        @relation(fields: [clienteId], references: [id])
-  items            ItemPedido[]
-  avances          AvanceTaller[]
-}
-
-model AvanceTaller {
-  id        Int      @id @default(autoincrement())
-  pedidoId  Int
-  nota      String
-  estado    String
-  creadoEn  DateTime @default(now())
-  pedido    Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
-}
-
-model ItemPedido {
-  id            Int       @id @default(autoincrement())
-  pedidoId      Int
-  materialId    Int
+model Categoria {
+  id            Int                    @id @default(autoincrement())
+  nombre        String
+  icono         String
   descripcion   String?
-  largo         Float
-  ancho         Float
-  cantBachas    Int       @default(0)
-  cantCortes    Int       @default(0)
-  desperdicio   Float     @default(0)
-  precioUnit    Float
-  precioTotal   Float
-  bachaTipo     String?
-  bachaId       Int?
-  bachaLargo    Float?
-  bachaAncho    Float?
-  pedido        Pedido    @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
-  material      Material  @relation("ItemMaterial", fields: [materialId], references: [id])
-  bacha         Material? @relation("ItemBacha", fields: [bachaId], references: [id])
+  color         String                 @default("#2563EB")
+  activo        Boolean                @default(true)
+  creadoEn      DateTime               @default(now())
+  profesionales ProfesionalCategoria[]
+  solicitudes   Solicitud[]
 }
 
-model Recordatorio {
-  id         Int      @id @default(autoincrement())
-  clienteId  Int
-  nota       String
-  fechaAviso DateTime
-  completado Boolean  @default(false)
-  creadoEn   DateTime @default(now())
-  cliente    Cliente  @relation(fields: [clienteId], references: [id])
+model Profesional {
+  id            Int                    @id @default(autoincrement())
+  nombre        String
+  telefono      String
+  email         String?
+  descripcion   String?
+  zona          String
+  disponible    Boolean                @default(true)
+  calificacion  Float                  @default(0)
+  totalTrabajos Int                    @default(0)
+  fotoUrl       String?
+  creadoEn      DateTime               @default(now())
+  categorias    ProfesionalCategoria[]
+  asignaciones  Asignacion[]
+  calificaciones Calificacion[]
 }
 
-model Maquina {
-  id             Int             @id @default(autoincrement())
-  nombre         String
-  tipo           String          // "maquina" | "vehiculo"
-  descripcion    String?
-  activo         Boolean         @default(true)
-  creadoEn       DateTime        @default(now())
-  mantenimientos Mantenimiento[]
+model ProfesionalCategoria {
+  profesionalId Int
+  categoriaId   Int
+  profesional   Profesional @relation(fields: [profesionalId], references: [id], onDelete: Cascade)
+  categoria     Categoria   @relation(fields: [categoriaId], references: [id], onDelete: Cascade)
+
+  @@id([profesionalId, categoriaId])
 }
 
-model Mantenimiento {
-  id           Int       @id @default(autoincrement())
-  maquinaId    Int
-  tipo         String    // "aceite" | "gomas" | "frenos" | "service" | "reparacion" | "revision" | "otro"
-  descripcion  String
-  costo        Float     @default(0)
-  fecha        DateTime  @default(now())
-  proximaFecha DateTime?
-  km           Int?
-  creadoEn     DateTime  @default(now())
-  maquina      Maquina   @relation(fields: [maquinaId], references: [id], onDelete: Cascade)
+model Cliente {
+  id          Int         @id @default(autoincrement())
+  nombre      String
+  telefono    String
+  email       String?
+  direccion   String?
+  creadoEn    DateTime    @default(now())
+  solicitudes Solicitud[]
+}
+
+model Solicitud {
+  id            Int           @id @default(autoincrement())
+  clienteId     Int
+  categoriaId   Int
+  descripcion   String
+  direccion     String
+  urgencia      String        @default("normal")
+  estado        String        @default("pendiente")
+  presupuesto   Float?
+  notas         String?
+  creadoEn      DateTime      @default(now())
+  actualizadoEn DateTime      @updatedAt
+  cliente       Cliente       @relation(fields: [clienteId], references: [id])
+  categoria     Categoria     @relation(fields: [categoriaId], references: [id])
+  asignacion    Asignacion?
+  calificacion  Calificacion?
+}
+
+model Asignacion {
+  id            Int         @id @default(autoincrement())
+  solicitudId   Int         @unique
+  profesionalId Int
+  estado        String      @default("aceptado")
+  fechaInicio   DateTime?
+  fechaFin      DateTime?
+  creadoEn      DateTime    @default(now())
+  solicitud     Solicitud   @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
+  profesional   Profesional @relation(fields: [profesionalId], references: [id])
+}
+
+model Calificacion {
+  id            Int         @id @default(autoincrement())
+  solicitudId   Int         @unique
+  profesionalId Int
+  puntuacion    Int
+  comentario    String?
+  creadoEn      DateTime    @default(now())
+  solicitud     Solicitud   @relation(fields: [solicitudId], references: [id], onDelete: Cascade)
+  profesional   Profesional @relation(fields: [profesionalId], references: [id])
 }

@@ -2,149 +2,195 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const categorias = [
+  { nombre: "Plomería", icono: "🔧", descripcion: "Instalaciones y reparaciones de cañerías, agua y gas", color: "#2563EB" },
+  { nombre: "Electricidad", icono: "⚡", descripcion: "Instalaciones eléctricas, tableros, cortocircuitos", color: "#D97706" },
+  { nombre: "Albañilería", icono: "🧱", descripcion: "Construcción, reparaciones, revoques y cerámicos", color: "#DC2626" },
+  { nombre: "Mecánica", icono: "🚗", descripcion: "Reparación y mantenimiento de autos y motos", color: "#059669" },
+  { nombre: "Computación", icono: "💻", descripcion: "Reparación de PC, redes, soporte técnico", color: "#7C3AED" },
+  { nombre: "Seguridad", icono: "🔒", descripcion: "Alarmas, cámaras, cerrajería y control de accesos", color: "#0891B2" },
+  { nombre: "Medicina", icono: "👨‍⚕️", descripcion: "Médicos a domicilio, enfermería y cuidados", color: "#E11D48" },
+  { nombre: "Abogados", icono: "⚖️", descripcion: "Asesoramiento legal, consultas y trámites", color: "#1D4ED8" },
+  { nombre: "Jardinería", icono: "🌿", descripcion: "Mantenimiento de jardines, poda y paisajismo", color: "#16A34A" },
+  { nombre: "Limpieza", icono: "🧹", descripcion: "Limpieza del hogar, oficinas y locales", color: "#0369A1" },
+  { nombre: "Pintura", icono: "🎨", descripcion: "Pintura interior, exterior y decorativa", color: "#9333EA" },
+  { nombre: "Gasista", icono: "🔥", descripcion: "Instalaciones y reparaciones de gas natural y envasado", color: "#EA580C" },
+];
+
+const profesionales = [
+  {
+    nombre: "Carlos Rodríguez",
+    telefono: "11-4523-8901",
+    email: "carlos.rod@email.com",
+    descripcion: "Plomero matriculado con 15 años de experiencia. Urgencias las 24hs.",
+    zona: "CABA - Palermo, Belgrano, Núñez",
+    calificacion: 4.8,
+    totalTrabajos: 127,
+    categorias: ["Plomería"],
+  },
+  {
+    nombre: "Martín López",
+    telefono: "11-5678-2345",
+    email: "martin.lopez@email.com",
+    descripcion: "Electricista matriculado. Instalaciones domiciliarias y comerciales.",
+    zona: "CABA - Caballito, Flores, Floresta",
+    calificacion: 4.6,
+    totalTrabajos: 89,
+    categorias: ["Electricidad"],
+  },
+  {
+    nombre: "Roberto Fernández",
+    telefono: "11-2345-6789",
+    descripcion: "Albañil con experiencia en obra fina y construcción en seco.",
+    zona: "GBA Oeste - Morón, Haedo, El Palomar",
+    calificacion: 4.5,
+    totalTrabajos: 203,
+    categorias: ["Albañilería"],
+  },
+  {
+    nombre: "Diego García",
+    telefono: "11-8765-4321",
+    email: "diego.garcia@mecanica.com",
+    descripcion: "Mecánico automotriz y motociclista. Especializado en diagnóstico electrónico.",
+    zona: "CABA - Mataderos, Liniers, Parque Avellaneda",
+    calificacion: 4.9,
+    totalTrabajos: 312,
+    categorias: ["Mecánica"],
+  },
+  {
+    nombre: "Ana Martínez",
+    telefono: "11-3456-7890",
+    email: "ana.tec@gmail.com",
+    descripcion: "Técnica en computación. Reparación de PCs, laptops y configuración de redes.",
+    zona: "CABA - Villa Crespo, Almagro, Villa del Parque",
+    calificacion: 4.7,
+    totalTrabajos: 156,
+    categorias: ["Computación"],
+  },
+  {
+    nombre: "Lucas Sánchez",
+    telefono: "11-9012-3456",
+    descripcion: "Técnico en seguridad electrónica. Instalación de alarmas, CCTV y control de accesos.",
+    zona: "CABA - Recoleta, Barrio Norte, Retiro",
+    calificacion: 4.4,
+    totalTrabajos: 78,
+    categorias: ["Seguridad"],
+  },
+  {
+    nombre: "Dr. Juan Pérez",
+    telefono: "11-7890-1234",
+    email: "drjuanperez@medico.com",
+    descripcion: "Médico clínico. Consultas a domicilio, urgencias y seguimiento de pacientes crónicos.",
+    zona: "CABA - Todos los barrios",
+    calificacion: 4.9,
+    totalTrabajos: 450,
+    categorias: ["Medicina"],
+  },
+  {
+    nombre: "Dra. Laura Gómez",
+    telefono: "11-5432-1098",
+    email: "laura.gomez.abogada@estudio.com",
+    descripcion: "Abogada especialista en derecho civil y familia. Consultas online y presenciales.",
+    zona: "CABA y GBA",
+    calificacion: 4.8,
+    totalTrabajos: 95,
+    categorias: ["Abogados"],
+  },
+  {
+    nombre: "Pedro González",
+    telefono: "11-6789-0123",
+    descripcion: "Plomero y gasista matriculado. Instalaciones completas y urgencias.",
+    zona: "GBA Norte - San Isidro, Tigre, Vicente López",
+    calificacion: 4.6,
+    totalTrabajos: 184,
+    categorias: ["Plomería", "Gasista"],
+  },
+  {
+    nombre: "Sofía Torres",
+    telefono: "11-2109-8765",
+    email: "sofia.limpieza@gmail.com",
+    descripcion: "Servicio de limpieza profesional del hogar, con productos incluidos.",
+    zona: "CABA - Palermo, Recoleta, San Telmo",
+    calificacion: 4.7,
+    totalTrabajos: 267,
+    categorias: ["Limpieza"],
+  },
+  {
+    nombre: "Gustavo Herrera",
+    telefono: "11-3210-9876",
+    descripcion: "Pintor profesional. Interior, exterior y trabajos decorativos.",
+    zona: "CABA y GBA",
+    calificacion: 4.5,
+    totalTrabajos: 138,
+    categorias: ["Pintura"],
+  },
+  {
+    nombre: "Ramón Flores",
+    telefono: "11-4321-0987",
+    descripcion: "Jardinero paisajista. Diseño, mantenimiento y poda de árboles.",
+    zona: "GBA Norte y CABA",
+    calificacion: 4.6,
+    totalTrabajos: 201,
+    categorias: ["Jardinería"],
+  },
+];
+
 async function main() {
-  // Materiales
-  const materiales = await Promise.all([
-    prisma.material.upsert({
-      where: { id: 1 },
-      update: {},
-      create: { nombre: "Granito Negro Absoluto", tipo: "granito", precioPorM2: 85000, color: "#1a1a1a", descripcion: "Importado, acabado brillante" },
-    }),
-    prisma.material.upsert({
-      where: { id: 2 },
-      update: {},
-      create: { nombre: "Granito Blanco Cristal", tipo: "granito", precioPorM2: 75000, color: "#f0f0f0", descripcion: "Nacional, textura uniforme" },
-    }),
-    prisma.material.upsert({
-      where: { id: 3 },
-      update: {},
-      create: { nombre: "Mármol Carrara", tipo: "marmol", precioPorM2: 120000, color: "#f5f5f0", descripcion: "Importado Italia, vetas grises" },
-    }),
-    prisma.material.upsert({
-      where: { id: 4 },
-      update: {},
-      create: { nombre: "Mármol Beige", tipo: "marmol", precioPorM2: 65000, color: "#d4b896", descripcion: "Nacional" },
-    }),
-    prisma.material.upsert({
-      where: { id: 5 },
-      update: {},
-      create: { nombre: "Porcelana Blanca Mate", tipo: "porcelana", precioPorM2: 95000, color: "#ffffff", descripcion: "Resistente a manchas" },
-    }),
-    prisma.material.upsert({
-      where: { id: 6 },
-      update: {},
-      create: { nombre: "Silestone Gris Expo", tipo: "silestone", precioPorM2: 145000, color: "#9e9e9e", descripcion: "Cuarzo compacto, garantía 25 años" },
-    }),
-  ]);
+  console.log("Seeding ServiYa...");
 
-  // Clientes
-  const clientes = await Promise.all([
-    prisma.cliente.upsert({
-      where: { id: 1 },
-      update: {},
-      create: { nombre: "María García", telefono: "+54 9 11 2345-6789", email: "maria@gmail.com", direccion: "Av. Corrientes 1234, CABA" },
-    }),
-    prisma.cliente.upsert({
-      where: { id: 2 },
-      update: {},
-      create: { nombre: "Carlos Rodríguez", telefono: "+54 9 11 8765-4321", email: "carlos.r@hotmail.com", direccion: "Calle 50 N°123, La Plata" },
-    }),
-    prisma.cliente.upsert({
-      where: { id: 3 },
-      update: {},
-      create: { nombre: "Ana López", telefono: "+54 9 351 456-7890", notas: "Obra en construcción, coordinar con el arquitecto" },
-    }),
-    prisma.cliente.upsert({
-      where: { id: 4 },
-      update: {},
-      create: { nombre: "Roberto Martínez", telefono: "+54 9 11 5555-0000", email: "rmartinez@empresa.com", direccion: "Palermo, CABA" },
-    }),
-  ]);
+  await prisma.calificacion.deleteMany();
+  await prisma.asignacion.deleteMany();
+  await prisma.solicitud.deleteMany();
+  await prisma.profesionalCategoria.deleteMany();
+  await prisma.profesional.deleteMany();
+  await prisma.cliente.deleteMany();
+  await prisma.categoria.deleteMany();
 
-  // Pedidos
-  const pedido1 = await prisma.pedido.upsert({
-    where: { id: 1 },
-    update: {},
-    create: {
-      clienteId: clientes[0].id,
-      estado: "produccion",
-      total: 312000,
-      notas: "Mesada cocina + baño principal",
-      fechaInstalacion: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      items: {
-        create: [
-          { materialId: materiales[0].id, descripcion: "Mesada cocina", largo: 2.8, ancho: 0.6, cantBachas: 1, cantCortes: 0, precioUnit: 85000, precioTotal: 157800 },
-          { materialId: materiales[2].id, descripcion: "Mesada baño", largo: 1.2, ancho: 0.5, cantBachas: 1, cantCortes: 0, precioUnit: 120000, precioTotal: 87000 },
-        ],
+  const categoriasCreadas = await Promise.all(
+    categorias.map((c) => prisma.categoria.create({ data: c }))
+  );
+
+  const categoriaMap = Object.fromEntries(
+    categoriasCreadas.map((c) => [c.nombre, c.id])
+  );
+
+  for (const prof of profesionales) {
+    const { categorias: cats, ...data } = prof;
+    await prisma.profesional.create({
+      data: {
+        ...data,
+        categorias: {
+          create: cats
+            .filter((c) => categoriaMap[c])
+            .map((c) => ({ categoriaId: categoriaMap[c] })),
+        },
       },
+    });
+  }
+
+  const cliente = await prisma.cliente.create({
+    data: {
+      nombre: "María Ejemplo",
+      telefono: "11-1111-2222",
+      email: "maria@ejemplo.com",
+      direccion: "Av. Corrientes 1234, CABA",
     },
   });
 
-  const pedido2 = await prisma.pedido.upsert({
-    where: { id: 2 },
-    update: {},
-    create: {
-      clienteId: clientes[1].id,
-      estado: "presupuesto",
-      total: 228500,
-      notas: "Espera confirmación del cliente",
-      items: {
-        create: [
-          { materialId: materiales[5].id, descripcion: "Mesada cocina en L", largo: 3.0, ancho: 0.6, cantBachas: 1, cantCortes: 2, precioUnit: 145000, precioTotal: 277000 },
-        ],
-      },
+  await prisma.solicitud.create({
+    data: {
+      clienteId: cliente.id,
+      categoriaId: categoriasCreadas[0].id,
+      descripcion: "Se rompió un caño bajo la pileta de la cocina. Hay pérdida de agua.",
+      direccion: "Av. Corrientes 1234, CABA",
+      urgencia: "urgente",
+      estado: "pendiente",
     },
   });
 
-  await prisma.pedido.upsert({
-    where: { id: 3 },
-    update: {},
-    create: {
-      clienteId: clientes[2].id,
-      estado: "listo",
-      total: 168000,
-      fechaInstalacion: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-      items: {
-        create: [
-          { materialId: materiales[1].id, descripcion: "Mesada baño", largo: 1.5, ancho: 0.5, cantBachas: 1, cantCortes: 0, precioUnit: 75000, precioTotal: 168750 },
-        ],
-      },
-    },
-  });
-
-  await prisma.pedido.upsert({
-    where: { id: 4 },
-    update: {},
-    create: {
-      clienteId: clientes[3].id,
-      estado: "instalado",
-      total: 432000,
-      items: {
-        create: [
-          { materialId: materiales[4].id, descripcion: "Mesada cocina completa", largo: 4.0, ancho: 0.65, cantBachas: 2, cantCortes: 1, precioUnit: 95000, precioTotal: 279000 },
-        ],
-      },
-    },
-  });
-
-  // Recordatorios
-  const ayer = new Date();
-  ayer.setDate(ayer.getDate() - 1);
-  const manana = new Date();
-  manana.setDate(manana.getDate() + 1);
-
-  await prisma.recordatorio.createMany({
-    data: [
-      { clienteId: clientes[1].id, nota: "Llamar para confirmar presupuesto Silestone", fechaAviso: ayer },
-      { clienteId: clientes[0].id, nota: "Coordinar fecha de instalación cocina", fechaAviso: manana },
-    ],
-  });
-
+  console.log(`✅ Categorías: ${categoriasCreadas.length}`);
+  console.log(`✅ Profesionales: ${profesionales.length}`);
   console.log("✅ Seed completado");
-  console.log(`   ${materiales.length} materiales`);
-  console.log(`   ${clientes.length} clientes`);
-  console.log(`   4 pedidos`);
-  console.log(`   2 recordatorios`);
 }
 
 main()
